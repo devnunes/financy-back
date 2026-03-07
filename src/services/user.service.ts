@@ -1,24 +1,24 @@
-import { prismaClient } from "../../prisma/prisma";
+import { hashPassword } from '@/utils/hash'
+import { prismaClient } from '../../prisma/prisma'
 
 export class UserService {
-
   async createUser(name: string, email: string, password: string) {
     return prismaClient.user.create({
       data: {
         name,
         email,
-        password
-      }
-    });
+        password: await hashPassword(password),
+      },
+    })
   }
 
   async getUserById(id: string) {
     const user = await prismaClient.user.findUnique({
       where: {
-        id
-      }
+        id,
+      },
     })
-    if (!user) throw new Error("User not found");
-    return user;
+    if (!user) throw new Error('User not found')
+    return user
   }
 }

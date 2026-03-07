@@ -1,5 +1,5 @@
 import type { MiddlewareFn } from 'type-graphql'
-import type { GraphQLContext } from '../graphql/context'
+import type { GraphQLContext } from '@/graphql/context'
 
 export const authMiddleware: MiddlewareFn<GraphQLContext> = async (
   { context },

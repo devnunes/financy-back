@@ -1,5 +1,5 @@
 import type { ExpressContextFunctionArgument } from '@as-integrations/express5'
-import { type JwtPayload, verifyJwt } from '../../utils/jwt'
+import { type JwtPayload, verifyJwt } from '@/utils/jwt'
 
 export type GraphQLContext = {
   userId: string | undefined

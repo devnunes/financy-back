@@ -16,7 +16,11 @@ export class UserResolver {
   async createUser(
     @Arg('data', () => CreateUserInput) data: CreateUserInput
   ): Promise<string> {
-    const user = await this.userService.createUser(data.name, data.email, data.password)
+    const user = await this.userService.createUser(
+      data.name,
+      data.email,
+      data.password
+    )
     return user.id
   }
 

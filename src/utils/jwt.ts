@@ -10,10 +10,10 @@ export const singJwt = (payload: JwtPayload, expiresIn?: string): string => {
   const secret: Secret = process.env.JWT_SECRET as unknown as Secret
   const options: SignOptions = expiresIn
     ? {
-      expiresIn: expiresIn as unknown as NonNullable<
-        SignOptions['expiresIn']
-      >,
-    }
+        expiresIn: expiresIn as unknown as NonNullable<
+          SignOptions['expiresIn']
+        >,
+      }
     : {}
 
   return jwt.sign(payload, secret, options)
