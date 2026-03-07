@@ -1,8 +1,8 @@
-import type { User } from '../../generated/prisma/client'
-import { prismaClient } from '../../prisma/prisma'
-import type { LoginInput, RegisterInput } from '../dtos/input/auth.input'
-import { comparePassword } from '../utils/hash'
-import { singJwt } from '../utils/jwt'
+import type { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
+import type { User } from '@/generated/prisma/client'
+import { prismaClient } from '@/prisma-client'
+import { comparePassword } from '@/utils/hash'
+import { singJwt } from '@/utils/jwt'
 
 export class AuthService {
   generateTokens(user: User) {

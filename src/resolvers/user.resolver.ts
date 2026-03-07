@@ -1,8 +1,8 @@
 import { Arg, Query, Resolver, UseMiddleware } from 'type-graphql'
-import { CreateUserInput } from '../dtos/input/user.input'
-import { authMiddleware } from '../middlewares/auth.middleware'
-import { UserModel } from '../models/user.model'
-import { UserService } from '../services/user.service'
+import { CreateUserInput } from '@/dtos/input/user.input'
+import { authMiddleware } from '@/middlewares/auth.middleware'
+import { UserModel } from '@/models/user.model'
+import { UserService } from '@/services/user.service'
 
 @Resolver(() => UserModel)
 @UseMiddleware(authMiddleware)

@@ -18,7 +18,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/prisma-client": ["./prisma/prisma"],
     }
   }
 }
