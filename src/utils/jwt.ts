@@ -21,9 +21,5 @@ export const singJwt = (payload: JwtPayload, expiresIn?: string): string => {
 
 export const verifyJwt = (token: string): JwtPayload => {
   const secret: Secret = process.env.JWT_SECRET as unknown as Secret
-  try {
-    return jwt.verify(token, secret) as JwtPayload
-  } catch (_error) {
-    throw new Error('Invalid token')
-  }
+  return jwt.verify(token, secret) as JwtPayload
 }

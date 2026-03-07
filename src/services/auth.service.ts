@@ -13,20 +13,12 @@ export class AuthService {
   }
 
   async register(data: RegisterInput) {
-    const existigUser = await prismaClient.user.findUnique({
+    const user = await prismaClient.user.findUnique({
       where: {
         email: data.email
       }
     });
-    if (existigUser) throw new Error("User already exists");
-
-    const user = await prismaClient.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: await hashPassword(data.password)
-      }
-    });
+    if (user) throw new Error("User already exists");
 
     return this.generateTokens(user);
   }
