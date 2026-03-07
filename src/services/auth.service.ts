@@ -30,7 +30,6 @@ export class AuthService {
     })
     if (!user) throw new Error('User not found')
     const isPasswordValid = await comparePassword(data.password, user.password)
-    console.log('isPasswordValid', isPasswordValid)
     if (!isPasswordValid) throw new Error('Invalid password')
 
     return this.generateTokens(user)

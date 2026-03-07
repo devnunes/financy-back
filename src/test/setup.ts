@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { afterAll, beforeEach } from 'vitest'
 
 const { prismaClient } = await import('@/prisma/prisma')
