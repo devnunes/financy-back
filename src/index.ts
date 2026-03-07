@@ -53,5 +53,5 @@ app.register(fastifyApollo(server), {
   context: buildContext,
 })
 app.listen({ port: env.PORT }, () => {
-  console.log(`Server is running on http://localhost:${env.PORT}/graphql`)
+  console.info(`Server is running on http://localhost:${env.PORT}/graphql`)
 })
