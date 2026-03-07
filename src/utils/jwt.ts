@@ -7,7 +7,7 @@ export type JwtPayload = {
   email: string
 }
 
-export const singJwt = (payload: JwtPayload, expiresIn?: string): string => {
+export const signJwt = (payload: JwtPayload, expiresIn?: string): string => {
   const secret: Secret = env.JWT_SECRET as unknown as Secret
   const options: SignOptions = expiresIn
     ? {

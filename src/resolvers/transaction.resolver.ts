@@ -3,6 +3,7 @@ import {
   Ctx,
   FieldResolver,
   Mutation,
+  Query,
   Resolver,
   Root,
   UseMiddleware,
@@ -56,7 +57,7 @@ export class TransactionResolver {
     return this.transactionService.createTransaction(data, context.userId)
   }
 
-  @Mutation(() => [TransactionModel])
+  @Query(() => [TransactionModel])
   async getTransactions(
     @Ctx() context: GraphQLContext
   ): Promise<TransactionModel[]> {

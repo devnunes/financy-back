@@ -2,12 +2,12 @@ import type { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
 import type { User } from '@/prisma/generated/client'
 import { prismaClient } from '@/prisma/prisma'
 import { comparePassword } from '@/utils/hash'
-import { singJwt } from '@/utils/jwt'
+import { signJwt } from '@/utils/jwt'
 
 export class AuthService {
   generateTokens(user: User) {
-    const token = singJwt({ id: user.id, email: user.email }, '15m')
-    const refreshToken = singJwt({ id: user.id, email: user.email }, '7d')
+    const token = signJwt({ id: user.id, email: user.email }, '15m')
+    const refreshToken = signJwt({ id: user.id, email: user.email }, '7d')
     return { token, refreshToken, user }
   }
 
