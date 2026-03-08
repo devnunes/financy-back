@@ -1,5 +1,5 @@
 {
-  "name": "financy-back",
+  "name": "financy-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
