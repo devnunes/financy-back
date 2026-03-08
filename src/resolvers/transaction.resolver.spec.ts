@@ -5,6 +5,7 @@ import type {
   UpdateTransactionInput,
 } from '@/dtos/input/transaction.input'
 import type { GraphQLContext } from '@/graphql/context'
+import { TransactionService } from '@/services/transaction.service'
 import { TransactionResolver } from './transaction.resolver'
 
 type createSetup = {
@@ -87,7 +88,10 @@ describe('TransactionResolver.createTransaction', () => {
   })
 
   it('should throw Unauthorized when context has no userId', async () => {
-    const resolver = new TransactionResolver()
+    const transactionService = new TransactionService()
+    const resolver = new TransactionResolver({
+      transactionService,
+    })
     const { input, context } = makeResolverSetup('create', {
       context: {
         userId: undefined,

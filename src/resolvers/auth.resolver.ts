@@ -3,11 +3,14 @@ import { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
 import { LoginOutput, RegisterOutput } from '@/dtos/output/auth.output'
 import { AuthService } from '@/services/auth.service'
 
+type AuthResolverDeps = {
+  authService?: Pick<AuthService, 'register' | 'login'>
+}
 @Resolver()
 export class AuthResolver {
-  private authService: AuthService
-  constructor() {
-    this.authService = new AuthService()
+  private authService: Pick<AuthService, 'register' | 'login'>
+  constructor(deps?: AuthResolverDeps) {
+    this.authService = deps?.authService ?? new AuthService()
   }
 
   @Mutation(() => RegisterOutput)

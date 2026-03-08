@@ -39,6 +39,7 @@ type Mutation {
   login(data: LoginInput!): LoginOutput!
   register(data: RegisterInput!): RegisterOutput!
   updateTransaction(data: UpdateTransactionInput!): TransactionModel!
+  updateUser(data: UpdateUserInput!): Boolean!
 }
 
 type Query {
@@ -79,6 +80,13 @@ input UpdateTransactionInput {
   description: String
   id: ID!
   type: String
+}
+
+input UpdateUserInput {
+  email: String
+  id: String!
+  name: String
+  password: String
 }
 
 type UserModel {
