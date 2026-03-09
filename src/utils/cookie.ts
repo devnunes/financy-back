@@ -25,7 +25,28 @@ function serializeCookie(name: string, value: string): string {
   return parts.join('; ')
 }
 
-export function setSessionCookie(reply: FastifyReply, token: string): void {
+export function setSessionCookie(
+  reply: FastifyReply,
+  token: string,
+  options?: { maxAge?: number }
+): void {
+  if (options?.maxAge !== undefined) {
+    const parts = [
+      `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
+      'Path=/',
+      `Max-Age=${options.maxAge}`,
+      'HttpOnly',
+      'SameSite=Lax',
+    ]
+
+    if (isSecureCookieEnabled()) {
+      parts.push('Secure')
+    }
+
+    reply.header('Set-Cookie', parts.join('; '))
+    return
+  }
+
   reply.header('Set-Cookie', serializeCookie(SESSION_COOKIE_NAME, token))
 }
 
