@@ -1,27 +1,27 @@
 import { Arg, Ctx, Mutation, Resolver } from 'type-graphql'
-import { RegisterInput, SignInInput } from '@/dtos/input/auth.input'
-import { RegisterOutput, SignInOutput } from '@/dtos/output/auth.output'
+import { SignInInput, SignUpInput } from '@/dtos/input/auth.input'
+import { SignInOutput, SignUpOutput } from '@/dtos/output/auth.output'
 import type { GraphQLContext } from '@/graphql/context'
 import { AuthService } from '@/services/auth.service'
 import { setSessionCookie } from '@/utils/cookie'
 import { isLeft } from '@/utils/either'
 
 type AuthResolverDeps = {
-  authService?: Pick<AuthService, 'register' | 'signIn'>
+  authService?: Pick<AuthService, 'signIn' | 'signUp'>
 }
 @Resolver()
 export class AuthResolver {
-  private authService: Pick<AuthService, 'register' | 'signIn'>
+  private authService: Pick<AuthService, 'signIn' | 'signUp'>
   constructor(deps?: AuthResolverDeps) {
     this.authService = deps?.authService ?? new AuthService()
   }
 
-  @Mutation(() => RegisterOutput)
-  async register(
-    @Arg('data', () => RegisterInput) data: RegisterInput,
+  @Mutation(() => SignUpOutput)
+  async signUp(
+    @Arg('data', () => SignUpInput) data: SignUpInput,
     @Ctx() context: GraphQLContext
-  ): Promise<RegisterOutput> {
-    const result = await this.authService.register(data)
+  ): Promise<SignUpOutput> {
+    const result = await this.authService.signUp(data)
     if (isLeft(result)) throw result.left
 
     setSessionCookie(context.res, result.right.token)

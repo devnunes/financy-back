@@ -5,16 +5,16 @@ import { createUserFactory } from '@/test/factories/user.factory'
 import { isLeft, isRight, unwrapEither } from '@/utils/either'
 import { verifyJwt } from '@/utils/jwt'
 
-describe('AuthService.register', () => {
+describe('AuthService.signUp', () => {
   it('creates a new user and returns signed tokens', async () => {
     const service = new AuthService()
-    const password = 'register-password'
+    const password = 'sign-up-password'
     const user = {
       name: faker.person.fullName(),
       email: faker.internet.email(),
       password,
     }
-    const result = await service.register(user)
+    const result = await service.signUp(user)
 
     expect(isRight(result)).toBe(true)
     expect(result.right).toEqual(
@@ -38,7 +38,7 @@ describe('AuthService.register', () => {
   it('throws when user already exists', async () => {
     const service = new AuthService()
     const existingUser = await createUserFactory()
-    const result = await service.register({
+    const result = await service.signUp({
       name: existingUser.name,
       email: existingUser.email,
       password: 'any-password',

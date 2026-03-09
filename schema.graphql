@@ -32,8 +32,8 @@ scalar DateTimeISO
 type Mutation {
   createTransaction(data: CreateTransactionInput!): TransactionModel!
   deleteTransaction(id: String!): Boolean!
-  register(data: RegisterInput!): RegisterOutput!
   signIn(data: SignInInput!): SignInOutput!
+  signUp(data: SignUpInput!): SignUpOutput!
   signout: Boolean!
   updateTransaction(data: UpdateTransactionInput!): TransactionModel!
   updateUser(data: UpdateUserInput!): Boolean!
@@ -45,24 +45,24 @@ type Query {
   me: UserModel!
 }
 
-input RegisterInput {
-  email: String!
-  name: String!
-  password: String!
-}
-
-type RegisterOutput {
-  refreshToken: String!
-  token: String!
-  user: UserModel!
-}
-
 input SignInInput {
   email: String!
   password: String!
 }
 
 type SignInOutput {
+  refreshToken: String!
+  token: String!
+  user: UserModel!
+}
+
+input SignUpInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+type SignUpOutput {
   refreshToken: String!
   token: String!
   user: UserModel!

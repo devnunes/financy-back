@@ -1,5 +1,5 @@
-import type { RegisterInput, SignInInput } from '@/dtos/input/auth.input'
-import type { RegisterOutput, SignInOutput } from '@/dtos/output/auth.output'
+import type { SignInInput, SignUpInput } from '@/dtos/input/auth.input'
+import type { SignInOutput, SignUpOutput } from '@/dtos/output/auth.output'
 import type { User } from '@/prisma/generated/client'
 import { prismaClient } from '@/prisma/prisma'
 import { type Either, makeLeft, makeRight } from '@/utils/either'
@@ -13,7 +13,7 @@ export class AuthService {
     return { token, refreshToken, user }
   }
 
-  async register(data: RegisterInput): Promise<Either<Error, RegisterOutput>> {
+  async signUp(data: SignUpInput): Promise<Either<Error, SignUpOutput>> {
     const user = await prismaClient.user.findUnique({
       where: {
         email: data.email,
