@@ -104,3 +104,36 @@ describe('UserResolver.getUser', () => {
     expect(result.id).toBe(userId)
   })
 })
+
+describe('UserResolver.me', () => {
+  it('should return current user from context.userId', async () => {
+    const userId = faker.string.uuid()
+    const getUserById = vi.fn().mockResolvedValue({
+      id: userId,
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+    })
+
+    const resolver = new UserResolver({
+      userService: {
+        createUser: vi.fn(),
+        getUserById,
+        updateUser: vi.fn(),
+      },
+    })
+
+    const result = await resolver.me({ userId } as GraphQLContext)
+
+    expect(getUserById).toHaveBeenCalledWith(userId)
+    expect(result.id).toBe(userId)
+  })
+
+  it('should throw Unauthorized when context has no userId', async () => {
+    const resolver = new UserResolver()
+
+    await expect(
+      resolver.me({ userId: undefined } as GraphQLContext)
+    ).rejects.toThrow('Unauthorized')
+  })
+})

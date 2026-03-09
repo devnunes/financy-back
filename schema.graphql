@@ -52,6 +52,7 @@ type Mutation {
 type Query {
   getTransactions: [TransactionModel!]!
   getUser(id: String!): UserModel!
+  me: UserModel!
 }
 
 input RegisterInput {

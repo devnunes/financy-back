@@ -29,6 +29,12 @@ export class UserResolver {
     return this.userService.getUserById(id)
   }
 
+  @Query(() => UserModel)
+  async me(@Ctx() context: GraphQLContext): Promise<UserModel> {
+    if (!context.userId) throw new Error('Unauthorized')
+    return this.userService.getUserById(context.userId)
+  }
+
   @Mutation(() => Boolean)
   async updateUser(
     @Arg('data', () => UpdateUserInput) data: UpdateUserInput,
