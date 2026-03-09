@@ -48,7 +48,7 @@ describe('AuthService.register', () => {
   })
 })
 
-describe('AuthService.login', () => {
+describe('AuthService.signIn', () => {
   it('returns signed tokens when credentials are valid', async () => {
     const service = new AuthService()
     const password = 'valid-password'
@@ -56,7 +56,7 @@ describe('AuthService.login', () => {
       password,
     })
 
-    const result = await service.login({
+    const result = await service.signIn({
       email: user.email,
       password,
     })
@@ -84,7 +84,7 @@ describe('AuthService.login', () => {
   it('throws when credentials are invalid', async () => {
     const service = new AuthService()
     const user = await createUserFactory()
-    const result = await service.login({
+    const result = await service.signIn({
       email: user.email,
       password: 'wrong-password',
     })
@@ -94,7 +94,7 @@ describe('AuthService.login', () => {
 
   it('throws when user does not exist', async () => {
     const service = new AuthService()
-    const result = await service.login({
+    const result = await service.signIn({
       email: `not-found-${Date.now()}@mail.com`,
       password: 'any-password',
     })

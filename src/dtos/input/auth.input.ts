@@ -13,7 +13,7 @@ export class RegisterInput {
 }
 
 @InputType()
-export class LoginInput {
+export class SignInInput {
   @Field(() => String)
   email!: string
 

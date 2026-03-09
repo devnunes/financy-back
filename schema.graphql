@@ -29,22 +29,12 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTimeISO
 
-input LoginInput {
-  email: String!
-  password: String!
-}
-
-type LoginOutput {
-  refreshToken: String!
-  token: String!
-  user: UserModel!
-}
-
 type Mutation {
   createTransaction(data: CreateTransactionInput!): TransactionModel!
   deleteTransaction(id: String!): Boolean!
-  login(data: LoginInput!): LoginOutput!
   register(data: RegisterInput!): RegisterOutput!
+  signIn(data: SignInInput!): SignInOutput!
+  signout: Boolean!
   updateTransaction(data: UpdateTransactionInput!): TransactionModel!
   updateUser(data: UpdateUserInput!): Boolean!
 }
@@ -62,6 +52,17 @@ input RegisterInput {
 }
 
 type RegisterOutput {
+  refreshToken: String!
+  token: String!
+  user: UserModel!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+type SignInOutput {
   refreshToken: String!
   token: String!
   user: UserModel!
@@ -102,6 +103,5 @@ type UserModel {
   email: String!
   id: ID!
   name: String!
-  password: String!
   updatedAt: DateTimeISO!
 }

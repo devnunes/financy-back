@@ -14,7 +14,7 @@ export class RegisterOutput {
 }
 
 @ObjectType()
-export class LoginOutput {
+export class SignInOutput {
   @Field(() => String)
   token!: string
 

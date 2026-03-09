@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
-import type { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
+import type { RegisterInput, SignInInput } from '@/dtos/input/auth.input'
 import type { GraphQLContext } from '@/graphql/context'
 import { AuthService } from '@/services/auth.service'
 import { makeRight } from '@/utils/either'
@@ -10,8 +10,8 @@ type RegisterSetup = {
   input: RegisterInput
 }
 
-type LoginSetup = {
-  input: LoginInput
+type SignInSetup = {
+  input: SignInInput
 }
 
 function makeContext(): GraphQLContext {
@@ -26,9 +26,9 @@ function makeContext(): GraphQLContext {
 }
 
 function makeResolverSetup(
-  type: 'register' | 'login',
-  overrides?: Partial<RegisterSetup | LoginSetup>
-): RegisterSetup | LoginSetup {
+  type: 'register' | 'signIn',
+  overrides?: Partial<RegisterSetup | SignInSetup>
+): RegisterSetup | SignInSetup {
   const data = {
     input: {
       name: faker.person.fullName(),
@@ -68,7 +68,7 @@ describe('AuthResolver.register', () => {
     const resolver = new AuthResolver({
       authService: {
         register,
-        login: vi.fn(),
+        signIn: vi.fn(),
       },
     })
 
@@ -121,12 +121,12 @@ describe('AuthResolver.register', () => {
   })
 })
 
-describe('AuthResolver.login', () => {
-  it('should login a user', async () => {
-    const { input } = makeResolverSetup('login') as LoginSetup
+describe('AuthResolver.signIn', () => {
+  it('should sign in a user', async () => {
+    const { input } = makeResolverSetup('signIn') as SignInSetup
     const context = makeContext()
 
-    const login = vi.fn().mockResolvedValue(
+    const signIn = vi.fn().mockResolvedValue(
       makeRight({
         token: faker.internet.jwt(),
         refreshToken: faker.internet.jwt(),
@@ -140,13 +140,13 @@ describe('AuthResolver.login', () => {
     const resolver = new AuthResolver({
       authService: {
         register: vi.fn(),
-        login,
+        signIn,
       },
     })
 
-    const result = await resolver.login(input, context)
+    const result = await resolver.signIn(input, context)
 
-    expect(login).toHaveBeenCalledWith(input)
+    expect(signIn).toHaveBeenCalledWith(input)
     expect(context.res.header).toHaveBeenCalledWith(
       'Set-Cookie',
       expect.stringContaining('session_token=')
@@ -161,11 +161,11 @@ describe('AuthResolver.login', () => {
     })
   })
 
-  it('should use AuthService.login when no dependency is injected', async () => {
-    const { input } = makeResolverSetup('login') as LoginSetup
+  it('should use AuthService.signIn when no dependency is injected', async () => {
+    const { input } = makeResolverSetup('signIn') as SignInSetup
     const context = makeContext()
-    const loginSpy = vi.spyOn(AuthService.prototype, 'login')
-    loginSpy.mockResolvedValue(
+    const signInSpy = vi.spyOn(AuthService.prototype, 'signIn')
+    signInSpy.mockResolvedValue(
       makeRight({
         token: faker.internet.jwt(),
         refreshToken: faker.internet.jwt(),
@@ -182,9 +182,9 @@ describe('AuthResolver.login', () => {
 
     const resolver = new AuthResolver()
 
-    const result = await resolver.login(input, context)
+    const result = await resolver.signIn(input, context)
 
-    expect(loginSpy).toHaveBeenCalledWith(input)
+    expect(signInSpy).toHaveBeenCalledWith(input)
     expect(context.res.header).toHaveBeenCalledWith(
       'Set-Cookie',
       expect.stringContaining('session_token=')
