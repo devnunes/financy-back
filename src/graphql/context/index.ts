@@ -1,5 +1,6 @@
 import type { ApolloFastifyContextFunction } from '@as-integrations/fastify'
 import type { FastifyReply, FastifyRequest } from 'fastify'
+import { getCookieFromHeader, SESSION_COOKIE_NAME } from '@/utils/cookie'
 import { type JwtPayload, verifyJwt } from '@/utils/jwt'
 
 export type GraphQLContext = {
@@ -26,7 +27,14 @@ export const buildContext: ApolloFastifyContextFunction<
   const authHeader = Array.isArray(rawAuthorization)
     ? (rawAuthorization[0] ?? '')
     : (rawAuthorization ?? '')
-  const token = authHeader.replace('Bearer ', '')
+  const tokenFromHeader = authHeader.replace('Bearer ', '')
+  const rawCookieHeader = req.headers.cookie
+  const cookieHeader = Array.isArray(rawCookieHeader)
+    ? rawCookieHeader.join('; ')
+    : rawCookieHeader
+
+  const tokenFromCookie = getCookieFromHeader(cookieHeader, SESSION_COOKIE_NAME)
+  const token = tokenFromHeader || tokenFromCookie
   const userId = getUserIdFromToken(token)
 
   return { userId, token, req, res }

@@ -1,7 +1,10 @@
-import { Arg, Mutation, Resolver } from 'type-graphql'
+import { Arg, Ctx, Mutation, Resolver } from 'type-graphql'
 import { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
 import { LoginOutput, RegisterOutput } from '@/dtos/output/auth.output'
+import type { GraphQLContext } from '@/graphql/context'
 import { AuthService } from '@/services/auth.service'
+import { setSessionCookie } from '@/utils/cookie'
+import { isLeft } from '@/utils/either'
 
 type AuthResolverDeps = {
   authService?: Pick<AuthService, 'register' | 'login'>
@@ -15,15 +18,27 @@ export class AuthResolver {
 
   @Mutation(() => RegisterOutput)
   async register(
-    @Arg('data', () => RegisterInput) data: RegisterInput
+    @Arg('data', () => RegisterInput) data: RegisterInput,
+    @Ctx() context: GraphQLContext
   ): Promise<RegisterOutput> {
-    return this.authService.register(data)
+    const result = await this.authService.register(data)
+    if (isLeft(result)) throw result.left
+
+    setSessionCookie(context.res, result.right.token)
+
+    return result.right
   }
 
   @Mutation(() => LoginOutput)
   async login(
-    @Arg('data', () => LoginInput) data: LoginInput
+    @Arg('data', () => LoginInput) data: LoginInput,
+    @Ctx() context: GraphQLContext
   ): Promise<LoginOutput> {
-    return this.authService.login(data)
+    const result = await this.authService.login(data)
+    if (isLeft(result)) throw result.left
+
+    setSessionCookie(context.res, result.right.token)
+
+    return result.right
   }
 }

@@ -1,39 +1,50 @@
+import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
 import { AuthService } from '@/services/auth.service'
 import { createUserFactory } from '@/test/factories/user.factory'
+import { isLeft, isRight, unwrapEither } from '@/utils/either'
 import { verifyJwt } from '@/utils/jwt'
 
 describe('AuthService.register', () => {
   it('creates a new user and returns signed tokens', async () => {
     const service = new AuthService()
     const password = 'register-password'
-
-    const result = await service.register({
-      name: 'Register User',
-      email: `register-${Date.now()}@mail.com`,
+    const user = {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
       password,
-    })
+    }
+    const result = await service.register(user)
 
-    expect(result.token).toBeTypeOf('string')
-    expect(result.refreshToken).toBeTypeOf('string')
-    expect(result.user.email).toContain('register-')
+    expect(isRight(result)).toBe(true)
+    expect(result.right).toEqual(
+      expect.objectContaining({
+        token: expect.any(String),
+        refreshToken: expect.any(String),
+        user: expect.objectContaining({
+          id: expect.any(String),
+          name: user.name,
+          email: user.email,
+        }),
+      })
+    )
+    const tokenPayload = verifyJwt(result.right.token)
+    const refreshTokenPayload = verifyJwt(result.right.refreshToken)
 
-    const tokenPayload = verifyJwt(result.token)
-    expect(tokenPayload.id).toBe(result.user.id)
-    expect(tokenPayload.email).toBe(result.user.email)
+    expect(tokenPayload.email).toBe(user.email)
+    expect(refreshTokenPayload.id).toBe(result.right.user.id)
   })
 
   it('throws when user already exists', async () => {
     const service = new AuthService()
     const existingUser = await createUserFactory()
-
-    await expect(
-      service.register({
-        name: existingUser.name,
-        email: existingUser.email,
-        password: 'any-password',
-      })
-    ).rejects.toThrow('User already exists')
+    const result = await service.register({
+      name: existingUser.name,
+      email: existingUser.email,
+      password: 'any-password',
+    })
+    expect(isLeft(result)).toBe(true)
+    expect(unwrapEither(result)).toBeInstanceOf(Error)
   })
 })
 
@@ -50,37 +61,44 @@ describe('AuthService.login', () => {
       password,
     })
 
-    expect(result.token).toBeTypeOf('string')
-    expect(result.refreshToken).toBeTypeOf('string')
-    expect(result.user.email).toBe(user.email)
+    expect(isRight(result)).toBe(true)
+    if (!isRight(result)) throw result.left
 
-    const tokenPayload = verifyJwt(result.token)
-    const refreshTokenPayload = verifyJwt(result.refreshToken)
+    expect(result.right).toEqual(
+      expect.objectContaining({
+        token: expect.any(String),
+        refreshToken: expect.any(String),
+        user: expect.objectContaining({
+          id: expect.any(String),
+          email: user.email,
+        }),
+      })
+    )
+    const tokenPayload = verifyJwt(result.right.token)
+    const refreshTokenPayload = verifyJwt(result.right.refreshToken)
 
     expect(tokenPayload.email).toBe(user.email)
-    expect(refreshTokenPayload.id).toBe(user.id)
+    expect(refreshTokenPayload.id).toBe(result.right.user.id)
   })
 
   it('throws when credentials are invalid', async () => {
     const service = new AuthService()
-
     const user = await createUserFactory()
-    await expect(
-      service.login({
-        email: user.email,
-        password: 'wrong-password',
-      })
-    ).rejects.toThrow('Invalid password')
+    const result = await service.login({
+      email: user.email,
+      password: 'wrong-password',
+    })
+    expect(isLeft(result)).toBe(true)
+    expect(unwrapEither(result)).toBeInstanceOf(Error)
   })
 
   it('throws when user does not exist', async () => {
     const service = new AuthService()
-
-    await expect(
-      service.login({
-        email: `not-found-${Date.now()}@mail.com`,
-        password: 'any-password',
-      })
-    ).rejects.toThrow('User not found')
+    const result = await service.login({
+      email: `not-found-${Date.now()}@mail.com`,
+      password: 'any-password',
+    })
+    expect(isLeft(result)).toBe(true)
+    expect(unwrapEither(result)).toBeInstanceOf(Error)
   })
 })

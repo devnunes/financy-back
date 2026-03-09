@@ -1,0 +1,49 @@
+import type { FastifyReply } from 'fastify'
+import { env } from '@/env'
+
+export const SESSION_COOKIE_NAME = 'session_token'
+const SESSION_COOKIE_MAX_AGE_SECONDS = 15 * 60
+
+function isSecureCookieEnabled(): boolean {
+  if (env.NODE_ENV === 'production') return true
+  return (env.WEB_URL ?? '').startsWith('https://')
+}
+
+function serializeCookie(name: string, value: string): string {
+  const parts = [
+    `${name}=${encodeURIComponent(value)}`,
+    'Path=/',
+    `Max-Age=${SESSION_COOKIE_MAX_AGE_SECONDS}`,
+    'HttpOnly',
+    'SameSite=Lax',
+  ]
+
+  if (isSecureCookieEnabled()) {
+    parts.push('Secure')
+  }
+
+  return parts.join('; ')
+}
+
+export function setSessionCookie(reply: FastifyReply, token: string): void {
+  reply.header('Set-Cookie', serializeCookie(SESSION_COOKIE_NAME, token))
+}
+
+export function getCookieFromHeader(
+  cookieHeader: string | undefined,
+  cookieName: string
+): string | undefined {
+  if (!cookieHeader) return undefined
+
+  const cookies = cookieHeader.split(';')
+
+  for (const cookie of cookies) {
+    const [name, ...rawValue] = cookie.trim().split('=')
+    if (name !== cookieName || rawValue.length === 0) continue
+
+    const value = rawValue.join('=')
+    return decodeURIComponent(value)
+  }
+
+  return undefined
+}

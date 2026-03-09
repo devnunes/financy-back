@@ -1,7 +1,9 @@
 import { faker } from '@faker-js/faker'
 import { describe, expect, it, vi } from 'vitest'
 import type { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
+import type { GraphQLContext } from '@/graphql/context'
 import { AuthService } from '@/services/auth.service'
+import { makeRight } from '@/utils/either'
 import { AuthResolver } from './auth.resolver'
 
 type RegisterSetup = {
@@ -10,6 +12,17 @@ type RegisterSetup = {
 
 type LoginSetup = {
   input: LoginInput
+}
+
+function makeContext(): GraphQLContext {
+  return {
+    userId: undefined,
+    token: undefined,
+    req: {} as GraphQLContext['req'],
+    res: {
+      header: vi.fn(),
+    } as unknown as GraphQLContext['res'],
+  }
 }
 
 function makeResolverSetup(
@@ -32,11 +45,25 @@ function makeResolverSetup(
   return data
 }
 
-describe('AuthResolver', () => {
+describe('AuthResolver.register', () => {
   it('should register a user', async () => {
     const { input } = makeResolverSetup('register') as RegisterSetup
+    const context = makeContext()
 
-    const register = vi.fn().mockResolvedValue(input)
+    const register = vi.fn().mockResolvedValue(
+      makeRight({
+        token: faker.internet.jwt(),
+        refreshToken: faker.internet.jwt(),
+        user: {
+          id: faker.string.uuid(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          name: input.name,
+          email: input.email,
+          password: input.password,
+        },
+      })
+    )
 
     const resolver = new AuthResolver({
       authService: {
@@ -45,26 +72,70 @@ describe('AuthResolver', () => {
       },
     })
 
-    const result = await resolver.register(input)
+    const result = await resolver.register(input, context)
 
     expect(register).toHaveBeenCalledWith(input)
+    expect(context.res.header).toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.stringContaining('session_token=')
+    )
     expect(result).toMatchObject({
-      name: input.name,
-      email: input.email,
+      token: expect.any(String),
+      refreshToken: expect.any(String),
+      user: {
+        name: input.name,
+        email: input.email,
+      },
     })
   })
 
+  it('should use AuthService.register when no dependency is injected', async () => {
+    const { input } = makeResolverSetup('register') as RegisterSetup
+    const context = makeContext()
+    const registerSpy = vi.spyOn(AuthService.prototype, 'register')
+    registerSpy.mockResolvedValue(
+      makeRight({
+        token: faker.internet.jwt(),
+        refreshToken: faker.internet.jwt(),
+        user: {
+          id: faker.string.uuid(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          name: input.name,
+          email: input.email,
+          password: input.password,
+        },
+      })
+    )
+
+    const resolver = new AuthResolver()
+
+    const result = await resolver.register(input, context)
+
+    expect(registerSpy).toHaveBeenCalledWith(input)
+    expect(context.res.header).toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.stringContaining('session_token=')
+    )
+    expect(result.user.email).toBe(input.email)
+  })
+})
+
+describe('AuthResolver.login', () => {
   it('should login a user', async () => {
     const { input } = makeResolverSetup('login') as LoginSetup
+    const context = makeContext()
 
-    const login = vi.fn().mockResolvedValue({
-      token: faker.internet.jwt(),
-      refreshToken: faker.internet.jwt(),
-      user: {
-        email: input.email,
-        password: input.password,
-      },
-    })
+    const login = vi.fn().mockResolvedValue(
+      makeRight({
+        token: faker.internet.jwt(),
+        refreshToken: faker.internet.jwt(),
+        user: {
+          email: input.email,
+          password: input.password,
+        },
+      })
+    )
 
     const resolver = new AuthResolver({
       authService: {
@@ -73,9 +144,13 @@ describe('AuthResolver', () => {
       },
     })
 
-    const result = await resolver.login(input)
+    const result = await resolver.login(input, context)
 
     expect(login).toHaveBeenCalledWith(input)
+    expect(context.res.header).toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.stringContaining('session_token=')
+    )
     expect(result).toMatchObject({
       token: expect.any(String),
       refreshToken: expect.any(String),
@@ -86,51 +161,34 @@ describe('AuthResolver', () => {
     })
   })
 
-  it('should use AuthService.register when no dependency is injected', async () => {
-    const { input } = makeResolverSetup('register') as RegisterSetup
-    const registerSpy = vi.spyOn(AuthService.prototype, 'register')
-    registerSpy.mockResolvedValue({
-      token: faker.internet.jwt(),
-      refreshToken: faker.internet.jwt(),
-      user: {
-        id: faker.string.uuid(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: input.name,
-        email: input.email,
-        password: input.password,
-      },
-    })
-
-    const resolver = new AuthResolver()
-
-    const result = await resolver.register(input)
-
-    expect(registerSpy).toHaveBeenCalledWith(input)
-    expect(result.user.email).toBe(input.email)
-  })
-
   it('should use AuthService.login when no dependency is injected', async () => {
     const { input } = makeResolverSetup('login') as LoginSetup
+    const context = makeContext()
     const loginSpy = vi.spyOn(AuthService.prototype, 'login')
-    loginSpy.mockResolvedValue({
-      token: faker.internet.jwt(),
-      refreshToken: faker.internet.jwt(),
-      user: {
-        id: faker.string.uuid(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        name: faker.person.fullName(),
-        email: input.email,
-        password: input.password,
-      },
-    })
+    loginSpy.mockResolvedValue(
+      makeRight({
+        token: faker.internet.jwt(),
+        refreshToken: faker.internet.jwt(),
+        user: {
+          id: faker.string.uuid(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          name: faker.person.fullName(),
+          email: input.email,
+          password: input.password,
+        },
+      })
+    )
 
     const resolver = new AuthResolver()
 
-    const result = await resolver.login(input)
+    const result = await resolver.login(input, context)
 
     expect(loginSpy).toHaveBeenCalledWith(input)
+    expect(context.res.header).toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.stringContaining('session_token=')
+    )
     expect(result.user.email).toBe(input.email)
   })
 })

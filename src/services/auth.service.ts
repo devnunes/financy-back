@@ -1,6 +1,8 @@
 import type { LoginInput, RegisterInput } from '@/dtos/input/auth.input'
+import type { LoginOutput, RegisterOutput } from '@/dtos/output/auth.output'
 import type { User } from '@/prisma/generated/client'
 import { prismaClient } from '@/prisma/prisma'
+import { type Either, makeLeft, makeRight } from '@/utils/either'
 import { comparePassword, hashPassword } from '@/utils/hash'
 import { signJwt } from '@/utils/jwt'
 
@@ -11,13 +13,13 @@ export class AuthService {
     return { token, refreshToken, user }
   }
 
-  async register(data: RegisterInput) {
+  async register(data: RegisterInput): Promise<Either<Error, RegisterOutput>> {
     const user = await prismaClient.user.findUnique({
       where: {
         email: data.email,
       },
     })
-    if (user) throw new Error('User already exists')
+    if (user) return makeLeft(new Error('User already exists'))
     const createdUser = await prismaClient.user.create({
       data: {
         name: data.name,
@@ -26,19 +28,19 @@ export class AuthService {
       },
     })
 
-    return this.generateTokens(createdUser)
+    return makeRight(this.generateTokens(createdUser))
   }
 
-  async login(data: LoginInput) {
+  async login(data: LoginInput): Promise<Either<Error, LoginOutput>> {
     const user = await prismaClient.user.findUnique({
       where: {
         email: data.email,
       },
     })
-    if (!user) throw new Error('User not found')
+    if (!user) return makeLeft(new Error('User not found'))
     const isPasswordValid = await comparePassword(data.password, user.password)
-    if (!isPasswordValid) throw new Error('Invalid password')
+    if (!isPasswordValid) return makeLeft(new Error('Invalid password'))
 
-    return this.generateTokens(user)
+    return makeRight(this.generateTokens(user))
   }
 }

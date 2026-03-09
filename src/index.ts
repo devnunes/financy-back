@@ -45,6 +45,7 @@ await server.start()
 
 app.register(fastifyCors, {
   origin: env.WEB_URL || 'http://localhost:5173',
+  credentials: true,
   methods: ['GET', 'POST', 'DELETE'],
 })
 
